@@ -88,7 +88,8 @@ void AGASCharacter::InitAbilityInfo()
 		if (IsValid(RPGAbilitySystemComp))
 		{
 			RPGAbilitySystemComp->InitAbilityActorInfo(RPGPlayerState, this);
-
+			BindCallbacksToDependencies();
+			
 			if (HasAuthority())
 			{
 				InitClassDefault();
@@ -114,6 +115,33 @@ void AGASCharacter::InitClassDefault()
 				RPGAbilitySystemComp->InitializeDefaultAttributes(SelectedClassInfo->DefaultAttributes);
 			}
 		}
+	}
+}
+
+void AGASCharacter::BindCallbacksToDependencies()
+{
+	if (IsValid(RPGAbilitySystemComp) && IsValid(RPGAttributes))
+	{
+		RPGAbilitySystemComp->GetGameplayAttributeValueChangeDelegate(RPGAttributes->GetHealthAttribute()).AddLambda(
+			[this] (const FOnAttributeChangeData& Data)
+			{
+				OnHealthChanged(Data.NewValue, RPGAttributes->GetMaxHealth());
+			});
+
+		RPGAbilitySystemComp->GetGameplayAttributeValueChangeDelegate(RPGAttributes->GetManaAttribute()).AddLambda(
+			[this] (const FOnAttributeChangeData& Data)
+			{
+				OnManaChanged(Data.NewValue, RPGAttributes->GetMaxMana());
+			});
+	}
+}
+
+void AGASCharacter::BroadcastInitialValues()
+{
+	if (IsValid(RPGAttributes))
+	{
+		OnHealthChanged(RPGAttributes->GetHealth(),RPGAttributes->GetMaxHealth());
+		OnManaChanged(RPGAttributes->GetMana(),RPGAttributes->GetMaxMana());
 	}
 }
 
@@ -153,6 +181,14 @@ void AGASCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompon
 void AGASCharacter::OnRep_PlayerState()
 {
 	Super::OnRep_PlayerState();
+}
+
+void AGASCharacter::OnHealthChanged(float CurrentHealth, float MaxHealth)
+{
+}
+
+void AGASCharacter::OnManaChanged(float CurrentMana, float MaxMana)
+{
 }
 
 void AGASCharacter::Move(const FInputActionValue& Value)

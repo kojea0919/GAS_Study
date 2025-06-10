@@ -48,8 +48,13 @@ public:
 
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void OnRep_PlayerState() override;
-	
 
+	UFUNCTION(BlueprintCallable)
+	void OnHealthChanged(float CurrentHealth, float MaxHealth);
+
+	UFUNCTION(BlueprintCallable)
+	void OnManaChanged(float CurrentMana, float MaxMana); 
+	
 protected:
 	void Move(const FInputActionValue& Value);
 
@@ -72,7 +77,11 @@ private:
 	FGameplayTag CharacterTag;
 	
 	void InitAbilityInfo();
-	void InitClassDefault(); 
+	void InitClassDefault();
+	void BindCallbacksToDependencies();
+
+	UFUNCTION(BlueprintCallable)
+	void BroadcastInitialValues();
 	
 public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
